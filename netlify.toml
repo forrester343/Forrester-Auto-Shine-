@@ -1,0 +1,45 @@
+# =========================================================
+# NETLIFY AUTO-UNZIP & DEPLOY CONFIG FOR FORRESTER AUTO SHINE
+# Save this file as "netlify.toml" at the root of your GitHub repo
+# =========================================================
+
+# 1. Build Step:
+#    - Creates a clean "dist" output folder
+#    - Unzips your uploaded ZIP into "dist" (uses unzip, or Python 3 as fallback)
+#    - Removes the extra copy of netlify.toml from inside "dist"
+[build]
+  command = "mkdir -p dist && (unzip -o forrester-auto-shine-netlify.zip -d dist || python3 -m zipfile -e forrester-auto-shine-netlify.zip dist) && rm -f dist/netlify.toml"
+  publish = "dist"
+
+# 2. Prevent stale caching of your Service Worker (sw.js)
+[[headers]]
+  for = "/sw.js"
+  [headers.values]
+    Cache-Control = "no-cache, no-store, must-revalidate"
+
+# 3. Always check for the newest prices and packages in index.html
+[[headers]]
+  for = "/index.html"
+  [headers.values]
+    Cache-Control = "no-cache"
+
+# 4. Always check for the newest app icon/name settings in manifest.json
+[[headers]]
+  for = "/manifest.json"
+  [headers.values]
+    Cache-Control = "no-cache"
+
+# 5. Lightweight security headers (safe for Firebase & photo uploads)
+[[headers]]
+  for = "/*"
+  [headers.values]
+    X-Content-Type-Options = "nosniff"
+    Referrer-Policy = "strict-origin-when-cross-origin"
+
+# 6. Fallback rule: load index.html if a link is mistyped,
+#    while still serving real files (sw.js, icons, manifest.json) normally.
+[[redirects]]
+  from = "/*"
+  to = "/index.html"
+  status = 200
+  force = false
